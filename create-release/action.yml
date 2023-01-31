@@ -1,0 +1,31 @@
+name: Create release
+description: Action to deploy an image to k8s cluter using Argo CD
+inputs:
+  bump-type:
+    required: true
+    description: Release type
+  github-token:
+    required: true
+outputs:
+  version:
+    value: ${{ steps.version.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Generate next release
+      uses: zwaldowski/semver-release-action@v2.1
+      id: version
+      with:
+        bump: ${{ inputs.bump-type }}
+        prefix: "v"
+        github_token: ${{ inputs.github-token }}
+        dry_run: true
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        generateReleaseNotes: true
+        name: v${{ steps.version.outputs.version }}
+        tag: v${{ steps.version.outputs.version }}
+        token: ${{ inputs.github-token }}
